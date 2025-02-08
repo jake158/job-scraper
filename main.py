@@ -7,6 +7,7 @@ from jobspy import scrape_jobs
 SEEN_FILE = "seen.csv"
 NEW_JOBS_FILE = "new_jobs.csv"
 SEARCH_TERMS_FILE = "search_terms.json"
+PROXIES_FILE = "proxies.txt"
 
 
 def load_search_terms(file_path):
@@ -25,7 +26,6 @@ def load_search_terms(file_path):
     if not os.path.exists(file_path):
         print(f"{file_path} not found. Using empty search terms.")
         return [], []
-
     with open(file_path, "r") as f:
         config = json.load(f)
 
@@ -47,7 +47,28 @@ def load_seen_links(file_path):
     return []
 
 
-def scrape_job_board_jobs(search_term, location, country_indeed, seen_links):
+def load_proxies(file_path):
+    """
+    Load proxies from a text file, one per line.
+    If the file doesn't exist or contains no proxies,
+    return ["localhost"].
+    """
+    if not os.path.exists(file_path):
+        print(f"{file_path} not found. Using 'localhost' as proxy.")
+        return ["localhost"]
+
+    with open(file_path, "r") as f:
+        proxies = [line.strip() for line in f if line.strip()]
+
+    if not proxies:
+        print(f"No proxies found in {file_path}. Using 'localhost' as proxy.")
+        return ["localhost"]
+
+    print(f"Loaded {len(proxies)} proxies from {file_path}.")
+    return proxies
+
+
+def scrape_job_board_jobs(search_term, location, country_indeed, seen_links, proxies):
     try:
         jobs = scrape_jobs(
             site_name=["indeed", "linkedin", "zip_recruiter", "glassdoor"],
@@ -57,6 +78,7 @@ def scrape_job_board_jobs(search_term, location, country_indeed, seen_links):
             hours_old=72,
             distance=200,
             country_indeed=country_indeed,
+            proxies=proxies
         )
         print(f"[JOB BOARDS] Scraped {len(jobs)} jobs.")
     except Exception as e:
@@ -72,12 +94,13 @@ def scrape_job_board_jobs(search_term, location, country_indeed, seen_links):
     return new_jobs
 
 
-def scrape_google_jobs(search_term, seen_links):
+def scrape_google_jobs(search_term, seen_links, proxies):
     try:
         jobs = scrape_jobs(
             site_name="google",
             google_search_term=search_term,
-            results_wanted=2,
+            results_wanted=20,
+            proxies=proxies
         )
         print(f"[GOOGLE] Scraped {len(jobs)} jobs.")
     except Exception as e:
@@ -125,7 +148,6 @@ def save_seen_links(file_path, seen_links):
 
 if __name__ == "__main__":
     board_terms, google_terms = load_search_terms(SEARCH_TERMS_FILE)
-
     BOARD_SEARCH_TERMS = [
         (entry.get("search_term", ""), entry.get("location", ""), entry.get("country_indeed", ""))
         for entry in board_terms
@@ -133,16 +155,17 @@ if __name__ == "__main__":
     GOOGLE_SEARCH_TERMS = google_terms
 
     seen_links = load_seen_links(SEEN_FILE)
+    proxies = load_proxies(PROXIES_FILE)
     new_jobs = pd.DataFrame()
 
     for (search_term, location, country_indeed) in BOARD_SEARCH_TERMS:
-        new_board_jobs = scrape_job_board_jobs(search_term, location, country_indeed, seen_links)
+        new_board_jobs = scrape_job_board_jobs(search_term, location, country_indeed, seen_links, proxies)
         if not new_board_jobs.empty:
             new_jobs = pd.concat([new_jobs, new_board_jobs], ignore_index=True)
         seen_links = update_seen_links(seen_links, new_board_jobs)
 
     for search_term in GOOGLE_SEARCH_TERMS:
-        new_google_jobs = scrape_google_jobs(search_term, seen_links)
+        new_google_jobs = scrape_google_jobs(search_term, seen_links, proxies)
         if not new_google_jobs.empty:
             new_jobs = pd.concat([new_jobs, new_google_jobs], ignore_index=True)
         seen_links = update_seen_links(seen_links, new_google_jobs)
