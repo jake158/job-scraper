@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+seen.csv
+new_jobs.csv
+proxies.txt
+
 # C extensions
 *.so
 
