@@ -1,9 +1,9 @@
 import pandas as pd
+from adapters import load_proxies
 from src.scraper import JobScraper
 from src.utils import (
     load_config,
     load_seen_jobs,
-    load_proxies,
     save_jobs,
 )
 

@@ -51,24 +51,6 @@ def load_seen_jobs(file_path):
     return pd.DataFrame(columns=columns)
 
 
-def load_proxies(file_path):
-    """
-    Load proxies from a text file, one per line.
-    Proxy format: user:pass@host:port
-    If the file doesn't exist or contains no proxies, return ["localhost"].
-    """
-    if not os.path.exists(file_path):
-        print(f"{file_path} not found. Using 'localhost' as proxy.")
-        return ["localhost"]
-    with open(file_path, "r") as f:
-        proxies = [line.strip() for line in f if line.strip()]
-    if not proxies:
-        print(f"No proxies found in {file_path}. Using 'localhost' as proxy.")
-        return ["localhost"]
-    print(f"Loaded {len(proxies)} proxies from {file_path}.")
-    return proxies
-
-
 def save_jobs(file_path, jobs, append=False):
     """
     Save the jobs to a CSV file.
