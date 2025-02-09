@@ -40,17 +40,24 @@ def load_config(file_path):
     return config
 
 
-def load_seen_links(file_path):
+def load_seen_jobs(file_path):
     """
-    Load seen links from the given CSV file.
-    If the file doesn't exist, return an empty list.
+    Load seen jobs from a CSV file. Expected columns: title, company, location, job_url.
+    If the file doesn't exist, return an empty DataFrame with those columns.
     """
+    columns = ["title", "company", "location", "job_url"]
+
     if os.path.exists(file_path):
-        seen_links = pd.read_csv(file_path)["job_url"].tolist()
-        print(f"Loaded {len(seen_links)} seen links from {file_path}.")
-        return seen_links
-    print(f"{file_path} not found. Starting with an empty seen list.")
-    return []
+        try:
+            seen_jobs = pd.read_csv(file_path)
+            print(f"Loaded {len(seen_jobs)} seen jobs from {file_path}.")
+            return seen_jobs
+        except Exception as e:
+            print(f"Error loading seen jobs: {e}")
+            return pd.DataFrame(columns=columns)
+
+    print(f"{file_path} not found. Starting with an empty seen jobs DataFrame.")
+    return pd.DataFrame(columns=columns)
 
 
 def load_proxies(file_path):
@@ -71,31 +78,12 @@ def load_proxies(file_path):
     return proxies
 
 
-def update_seen_links(seen_links, new_jobs):
+def save_jobs(file_path, jobs):
     """
-    Update the list of seen links with links from new jobs.
+    Save the jobs to a CSV file.
     """
-    if not new_jobs.empty:
-        new_links = new_jobs["job_url"].tolist()
-        seen_links.extend(new_links)
-    return list(set(seen_links))
-
-
-def save_new_jobs(file_path, new_jobs):
-    """
-    Save the new jobs to a CSV file.
-    """
-    if new_jobs.empty:
-        print("No new jobs to save.")
+    if jobs.empty:
+        print("No jobs to save.")
         return
-    new_jobs.to_csv(file_path, quoting=csv.QUOTE_NONNUMERIC, escapechar="\\", index=False)
-    print(f"Saved {len(new_jobs)} new jobs to {file_path}.")
-
-
-def save_seen_links(file_path, seen_links):
-    """
-    Save the seen links to the given CSV file.
-    """
-    seen_df = pd.DataFrame({"job_url": seen_links})
-    seen_df.to_csv(file_path, quoting=csv.QUOTE_NONNUMERIC, escapechar="\\", index=False)
-    print(f"Saved {len(seen_links)} seen links to {file_path}.")
+    jobs.to_csv(file_path, quoting=csv.QUOTE_NONNUMERIC, escapechar="\\", index=False)
+    print(f"Saved {len(jobs)} new jobs to {file_path}.")
