@@ -12,6 +12,7 @@
   "board_search_terms": [
     {
       "search_term": "software engineer intern",
+      "indeed_search_term": "software engineer intern",
       "location": "San Francisco",
       "country_indeed": "USA",
       "results_wanted": 20,
@@ -20,6 +21,7 @@
     },
     {
       "search_term": "burger flipper",
+      "indeed_search_term": "burger flipper",
       "location": "Palo Alto",
       "country_indeed": "USA",
       "results_wanted": 20,
