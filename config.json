@@ -13,17 +13,30 @@
     {
       "search_term": "software engineer intern",
       "location": "San Francisco",
-      "country_indeed": "USA"
+      "country_indeed": "USA",
+      "results_wanted": 20,
+      "hours_old": 72,
+      "distance": 200
     },
     {
       "search_term": "burger flipper",
       "location": "Palo Alto",
-      "country_indeed": "USA"
+      "country_indeed": "USA",
+      "results_wanted": 20,
+      "hours_old": 72,
+      "distance": 200
     }
   ],
+
   "search_google_jobs": true,
   "google_search_terms": [
-    "software engineer intern jobs near San Francisco since yesterday",
-    "burger flipper jobs near Palo Alto since yesterday"
+    {
+      "search_term": "software engineer intern jobs near San Francisco since yesterday",
+      "results_wanted": 20
+    },
+    {
+      "search_term": "burger flipper jobs near Palo Alto since yesterday",
+      "results_wanted": 20
+    }
   ]
 }

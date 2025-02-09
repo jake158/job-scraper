@@ -1,5 +1,5 @@
 import pandas as pd
-from scraper import JobScraper
+from src.scraper import JobScraper
 from src.utils import (
     load_config,
     load_seen_jobs,
@@ -13,10 +13,20 @@ CONFIG_FILE = "config.json"
 PROXIES_FILE = "proxies.txt"
 
 
+def call_scrape(scrape_fn, entry, defaults):
+    """
+    Merge defaults with the given entry (if it is a dict) and call the provided scrape function.
+    """
+    if not isinstance(entry, dict):
+        return
+    params = {**defaults, **entry}
+    scrape_fn(**params)
+
+
 def get_job_identity(job):
     """
     Given a job record (a Series), return a tuple that represents its identity:
-    (title, company, location)
+    (title, company, location) -- all lowercased.
     """
     title = str(job.get("title", "")).strip().lower()
     company = str(job.get("company", "")).strip().lower()
@@ -35,10 +45,12 @@ def filter_seen(scraped_jobs, seen_jobs):
     seen_job_urls = set(seen_jobs["job_url"].dropna().tolist())
 
     seen_identity = set(
-        seen_jobs[["title", "company", "location"]]
-        .dropna()
-        .apply(lambda row: tuple(x.lower() for x in row), axis=1)
-        .tolist()
+        (
+            row["title"].strip().lower(),
+            row["company"].strip().lower(),
+            row["location"].strip().lower(),
+        )
+        for _, row in seen_jobs.dropna(subset=["title", "company", "location"]).iterrows()
     )
 
     filtered_jobs = []
@@ -61,12 +73,14 @@ def filter_jobs_by_field(jobs_df, field, filter_list):
     """
     Given a jobs DataFrame, filter out any row whose value in 'field'
     (converted to lowercase and stripped) is in the filter_list (also lowercased).
-    If filter_list is empty, return jobs_df unchanged.
+    If filter_list is empty or the field is missing, return jobs_df unchanged.
     """
     if not filter_list:
         return jobs_df
-    filter_values = {x.strip().lower() for x in filter_list}
+    if jobs_df.empty or field not in jobs_df.columns:
+        return jobs_df
 
+    filter_values = {x.strip().lower() for x in filter_list}
     filtered_df = jobs_df[jobs_df[field].fillna("").apply(lambda x: x.strip().lower() not in filter_values)]
     return filtered_df
 
@@ -77,36 +91,42 @@ def main():
     scraper = JobScraper(proxies)
 
     if config["search_job_boards"]:
-        for search_term, location, country_indeed in config["board_search_terms"]:
-            scraper.scrape_job_board_jobs(search_term, location, country_indeed=country_indeed)
+        board_defaults = {
+            "search_term": "",
+            "location": "",
+            "country_indeed": "USA",
+            "results_wanted": 20,
+            "hours_old": 72,
+            "distance": 200
+        }
+        for entry in config["board_search_terms"]:
+            call_scrape(scraper.scrape_job_board_jobs, entry, board_defaults)
 
     if config["search_google_jobs"]:
-        for search_term in config["google_search_terms"]:
-            scraper.scrape_google_jobs(search_term)
+        google_defaults = {
+            "search_term": "",
+            "results_wanted": 20
+        }
+        for entry in config["google_search_terms"]:
+            call_scrape(scraper.scrape_google_jobs, entry, google_defaults)
 
     scraper.drop_duplicates()
-
-    # Filter pipeline:
     seen_jobs = load_seen_jobs(SEEN_FILE)
     filtered_jobs_df, updated_seen_jobs = filter_seen(scraper.new_jobs, seen_jobs)
 
     print(f"After filtering seen jobs, {len(filtered_jobs_df)} jobs remain.")
 
-    text_filter_criteria = [
+    filter_criteria = [
         ("location", "filter_locations", "locations_to_filter"),
         ("title", "filter_job_titles", "job_titles_to_filter"),
         ("company", "filter_companies", "companies_to_filter")
     ]
 
-    for field, flag_key, values_key in text_filter_criteria:
+    for field, flag_key, values_key in filter_criteria:
         if config[flag_key]:
-            filtered_jobs_df = filter_jobs_by_field(
-                filtered_jobs_df,
-                field,
-                config[values_key]
-            )
+            filtered_jobs_df = filter_jobs_by_field(filtered_jobs_df, field, config[values_key])
+
             print(f"After applying {field} filters, {len(filtered_jobs_df)} jobs remain.")
-    #
 
     save_jobs(NEW_JOBS_FILE, filtered_jobs_df)
     save_jobs(SEEN_FILE, updated_seen_jobs)

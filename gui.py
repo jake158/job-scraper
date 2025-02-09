@@ -2,7 +2,7 @@ import os
 import webbrowser
 import pandas as pd
 import customtkinter as ctk
-from src.utils import save_new_jobs
+from src.utils import save_jobs
 
 # -------------------------------
 # Job Viewer GUI using customtkinter
@@ -134,7 +134,7 @@ class JobViewer(ctk.CTk):
             return
 
         self.jobs = self.jobs.drop(self.jobs.index[self.current_index]).reset_index(drop=True)
-        save_new_jobs("new_jobs.csv", self.jobs)
+        save_jobs("new_jobs.csv", self.jobs)
         print(f"Deleted job at index {self.current_index}. Updated CSV saved.")
 
         if self.current_index >= len(self.jobs) and self.current_index > 0:
