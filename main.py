@@ -1,7 +1,7 @@
 import pandas as pd
 from jobspy import scrape_jobs
 from src.utils import (
-    load_search_terms,
+    load_config,
     load_seen_links,
     load_proxies,
     update_seen_links,
@@ -11,7 +11,7 @@ from src.utils import (
 
 SEEN_FILE = "seen.csv"
 NEW_JOBS_FILE = "new_jobs.csv"
-SEARCH_TERMS_FILE = "search_terms.json"
+CONFIG_FILE = "config.json"
 PROXIES_FILE = "proxies.txt"
 
 
@@ -81,22 +81,18 @@ class JobScraper:
 
 
 def main():
-    board_entries, google_search_terms = load_search_terms(SEARCH_TERMS_FILE)
-    board_search_terms = [
-        (entry.get("search_term", ""), entry.get("location", ""), entry.get("country_indeed", ""))
-        for entry in board_entries
-    ]
-
+    config = load_config(CONFIG_FILE)
     seen_links = load_seen_links(SEEN_FILE)
     proxies = load_proxies(PROXIES_FILE)
-
     scraper = JobScraper(seen_links, proxies)
 
-    for search_term, location, country_indeed in board_search_terms:
-        scraper.scrape_job_board_jobs(search_term, location, country_indeed)
+    if config["search_job_boards"]:
+        for search_term, location, country_indeed in config["board_search_terms"]:
+            scraper.scrape_job_board_jobs(search_term, location, country_indeed)
 
-    for search_term in google_search_terms:
-        scraper.scrape_google_jobs(search_term)
+    if config["search_google_jobs"]:
+        for search_term in config["google_search_terms"]:
+            scraper.scrape_google_jobs(search_term)
 
     scraper.drop_duplicates()
 

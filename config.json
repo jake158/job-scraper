@@ -1,0 +1,29 @@
+{
+  "filter_locations": false,
+  "locations_to_filter": ["hell", "limbo"],
+
+  "filter_job_titles": false,
+  "job_titles_to_filter": ["toilet cleaner"],
+
+  "filter_companies": false,
+  "companies_to_filter": ["meta", "X"],
+
+  "search_job_boards": true,
+  "board_search_terms": [
+    {
+      "search_term": "software engineer intern",
+      "location": "San Francisco",
+      "country_indeed": "USA"
+    },
+    {
+      "search_term": "burger flipper",
+      "location": "Palo Alto",
+      "country_indeed": "USA"
+    }
+  ],
+  "search_google_jobs": true,
+  "google_search_terms": [
+    "software engineer intern jobs near San Francisco since yesterday",
+    "burger flipper jobs near Palo Alto since yesterday"
+  ]
+}

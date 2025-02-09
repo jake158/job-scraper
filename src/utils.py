@@ -4,27 +4,40 @@ import json
 import pandas as pd
 
 
-def load_search_terms(file_path):
+def load_config(file_path):
     """
-    Load search terms from a JSON file.
-    Expected JSON structure:
-    {
-      "board_search_terms": [
-         {"search_term": "software engineer intern", "location": "San Francisco", "country_indeed": "USA"}
-      ],
-      "google_search_terms": [
-         "software engineer intern jobs near San Francisco since yesterday"
-      ]
-    }
+    Load the configuration from a JSON file and process the search terms.
     """
     if not os.path.exists(file_path):
-        print(f"{file_path} not found. Using empty search terms.")
-        return [], []
+        raise Exception(f"{file_path} not found. You are probably calling main.py from outside of the project folder.")
+
     with open(file_path, "r") as f:
         config = json.load(f)
-    board_terms = config.get("board_search_terms", [])
-    google_terms = config.get("google_search_terms", [])
-    return board_terms, google_terms
+
+    config["search_job_boards"] = config.get("search_job_boards", False)
+    config["search_google_jobs"] = config.get("search_google_jobs", False)
+
+    board_entries = config.get("board_search_terms", [])
+    config["board_search_terms"] = [
+        (
+            entry.get("search_term", ""),
+            entry.get("location", ""),
+            entry.get("country_indeed", "")
+        )
+        for entry in board_entries
+    ]
+    config["google_search_terms"] = config.get("google_search_terms", [])
+
+    config["filter_locations"] = config.get("filter_locations", False)
+    config["locations_to_filter"] = config.get("locations_to_filter", [])
+
+    config["filter_job_titles"] = config.get("filter_job_titles", False)
+    config["job_titles_to_filter"] = config.get("job_titles_to_filter", [])
+
+    config["filter_companies"] = config.get("filter_companies", False)
+    config["companies_to_filter"] = config.get("companies_to_filter", [])
+
+    return config
 
 
 def load_seen_links(file_path):
@@ -43,6 +56,7 @@ def load_seen_links(file_path):
 def load_proxies(file_path):
     """
     Load proxies from a text file, one per line.
+    Proxy format: user:pass@host:port
     If the file doesn't exist or contains no proxies, return ["localhost"].
     """
     if not os.path.exists(file_path):
