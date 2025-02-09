@@ -69,12 +69,22 @@ def load_proxies(file_path):
     return proxies
 
 
-def save_jobs(file_path, jobs):
+def save_jobs(file_path, jobs, append=False):
     """
     Save the jobs to a CSV file.
+    If append is True and the file exists, load the existing jobs,
+    append the new jobs, and then save the combined DataFrame.
     """
     if jobs.empty:
         print("No jobs to save.")
         return
+
+    if append and os.path.exists(file_path):
+        try:
+            existing_jobs = pd.read_csv(file_path)
+            jobs = pd.concat([existing_jobs, jobs], ignore_index=True)
+        except Exception as e:
+            print(f"Error loading existing jobs from {file_path}: {e}")
+
     jobs.to_csv(file_path, quoting=csv.QUOTE_NONNUMERIC, escapechar="\\", index=False)
-    print(f"Saved {len(jobs)} new jobs to {file_path}.")
+    print(f"Saved {len(jobs)} jobs to {file_path}.")

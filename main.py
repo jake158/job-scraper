@@ -129,7 +129,7 @@ def main():
 
             print(f"After applying {field} filters, {len(filtered_jobs_df)} jobs remain.")
 
-    save_jobs(NEW_JOBS_FILE, filtered_jobs_df)
+    save_jobs(NEW_JOBS_FILE, filtered_jobs_df, append=True)
     save_jobs(SEEN_FILE, updated_seen_jobs)
 
 
