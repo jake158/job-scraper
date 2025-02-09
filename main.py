@@ -94,6 +94,7 @@ def main():
         board_defaults = {
             "search_term": "",
             "location": "",
+            "indeed_search_term": None,
             "country_indeed": "USA",
             "results_wanted": 20,
             "hours_old": 72,
