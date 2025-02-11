@@ -31,6 +31,7 @@ class JobScraper:
                 hours_old=hours_old,
                 distance=distance,
                 country_indeed=country_indeed,
+                linkedin_fetch_description=True,
                 proxies=self.proxies
             )
             print(f"[JOB BOARDS] Scraped {len(jobs)} jobs for '{search_term}' in '{location}' (non-Indeed sites).")
