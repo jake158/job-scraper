@@ -8,6 +8,10 @@
   "filter_companies": false,
   "companies_to_filter": ["meta", "X"],
 
+  "filter_with_llm": false,
+  "llm_api_key": "",
+  "llm_prompt": "I do not want jobs which have ANYTHING to do with otters. I'm serious.",
+
   "search_job_boards": true,
   "board_search_terms": [
     {

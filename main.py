@@ -1,6 +1,9 @@
 import pandas as pd
-from adapters import load_proxies
 from src.scraper import JobScraper
+from src.adapters import (
+    load_proxies,
+    llm_should_keep_job
+)
 from src.utils import (
     load_config,
     load_seen_jobs,
@@ -128,6 +131,23 @@ def main():
             filtered_jobs_df = filter_jobs_by_field(filtered_jobs_df, field, config[values_key])
 
             print(f"After applying {field} filters, {len(filtered_jobs_df)} jobs remain.")
+
+    if config["filter_with_llm"]:
+        print("Beginning LLM filtering...")
+
+        llm_filtered_jobs = []
+        for _, job in filtered_jobs_df.iterrows():
+            if llm_should_keep_job(
+                config["llm_api_key"],
+                config["llm_prompt"],
+                job.get("title", ""),
+                job.get("location", ""),
+                job.get("description", "")
+            ):
+                llm_filtered_jobs.append(job)
+
+        filtered_jobs_df = pd.DataFrame(llm_filtered_jobs)
+        print(f"After LLM filtering, {len(filtered_jobs_df)} jobs remain.")
 
     save_jobs(NEW_JOBS_FILE, filtered_jobs_df, append=True)
     save_jobs(SEEN_FILE, updated_seen_jobs)

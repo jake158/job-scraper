@@ -27,6 +27,9 @@ def load_config(file_path):
     config["job_titles_to_filter"] = config.get("job_titles_to_filter", [])
     config["filter_companies"] = config.get("filter_companies", False)
     config["companies_to_filter"] = config.get("companies_to_filter", [])
+    config["filter_with_llm"] = config.get("filter_with_llm", False)
+    config["llm_api_key"] = config.get("llm_api_key", "")
+    config["llm_prompt"] = config.get("llm_prompt", "")
 
     return config
 
