@@ -6,6 +6,7 @@ __pycache__/
 seen.csv
 new_jobs.csv
 proxies.txt
+backups/
 
 # C extensions
 *.so
